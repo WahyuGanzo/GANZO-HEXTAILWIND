@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GANZO HEXTAILWIND</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="shortcut icon" href="icon.png" type="image/x-icon">
+  <style>
+    body {
+      background-image: url('background.png'); /* Wallpaper Minecraft */
+      background-size: cover;
+      background-position: center;
+    }
+    .blur-glass {
+      backdrop-filter: blur(20px);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="blur-glass rounded-2xl p-8 w-full max-w-xl text-white shadow-2xl">
+    <h1 class="text-3xl font-bold text-center mb-2 text-yellow-300">GANZO HEXTAILWIND</h1>
+    <p class="text-center mb-6">Hex to Tailwind Converter</p>
+
+    <form id="form-pengubah" class="flex flex-col gap-4">
+      <input id="masukan-warna" type="text" placeholder="Masukin warna HEX lu bro (misal #1e40af atau 1e40af)" class="p-3 rounded-lg text-black" required />
+      <button type="submit" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg">Convert</button>
+    </form>
+
+    <div id="hasil-convert" class="mt-6 hidden">
+      <div class="flex items-center justify-between bg-white bg-opacity-10 rounded-lg p-4 mb-3">
+        <div class="flex items-center gap-3">
+          <div id="preview-warna" class="w-10 h-10 rounded-full border-2"></div>
+          <div>
+            <p>HEX lu: <span id="kode-hex" class="font-mono"></span></p>
+            <p>Tailwind-nya: <span id="kelas-tailwind" class="font-mono"></span></p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button onclick="copyText('#kode-hex')" class="bg-blue-500 text-sm px-2 py-1 rounded hover:bg-blue-600">Copy HEX</button>
+          <button onclick="copyText('#kelas-tailwind')" class="bg-yellow-500 text-sm px-2 py-1 rounded hover:bg-yellow-600">Copy TW</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form-pengubah');
+    const input = document.getElementById('masukan-warna');
+    const hasil = document.getElementById('hasil-convert');
+    const kodeHex = document.getElementById('kode-hex');
+    const kelasTW = document.getElementById('kelas-tailwind');
+    const preview = document.getElementById('preview-warna');
+
+    const warnaTailwind = {
+      'bg-blue-800': '#1e40af',
+      'bg-red-500': '#ef4444',
+      'bg-green-400': '#4ade80',
+      'bg-yellow-300': '#fde047',
+      'bg-purple-600': '#9333ea',
+      'bg-pink-500': '#ec4899',
+      'bg-gray-700': '#374151',
+      'bg-black': '#000000',
+      'bg-white': '#ffffff'
+    };
+
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) {
+        hex = hex.split('').map(x => x + x).join('');
+      }
+      const bigint = parseInt(hex, 16);
+      return [
+        (bigint >> 16) & 255,
+        (bigint >> 8) & 255,
+        bigint & 255
+      ];
+    }
+
+    function cariYangPalingDekat(hex) {
+      const inputRGB = hexToRgb(hex);
+      let minJarak = Infinity;
+      let hasilKelas = '';
+
+      for (const [kelas, kode] of Object.entries(warnaTailwind)) {
+        const twRGB = hexToRgb(kode);
+        const jarak = Math.sqrt(
+          Math.pow(twRGB[0] - inputRGB[0], 2) +
+          Math.pow(twRGB[1] - inputRGB[1], 2) +
+          Math.pow(twRGB[2] - inputRGB[2], 2)
+        );
+
+        if (jarak < minJarak) {
+          minJarak = jarak;
+          hasilKelas = kelas;
+        }
+      }
+      return hasilKelas;
+    }
+
+    function copyText(selector) {
+      const text = document.querySelector(selector).textContent;
+      navigator.clipboard.writeText(text);
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      let hex = input.value.trim();
+      if (!hex.startsWith('#')) hex = '#' + hex;
+
+      const kelas = cariYangPalingDekat(hex);
+      kodeHex.textContent = hex;
+      kelasTW.textContent = kelas;
+      preview.style.backgroundColor = hex;
+      hasil.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
